@@ -1,4 +1,4 @@
-const CACHE_NAME = 'driver-money-manager-v2';
+const CACHE_NAME = 'driver-money-manager-v3';
 const urlsToCache = [
   './',
   './index.html',
