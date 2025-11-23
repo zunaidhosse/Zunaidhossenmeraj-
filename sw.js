@@ -1,69 +1,89 @@
-const CACHE_NAME = 'driver-money-manager-v4';
-const urlsToCache = [
+const CACHE_NAME = 'driver-money-manager-v6';
+const APP_SHELL_URLS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './index.tsx',
-  './App.tsx',
-  './types.ts',
-  './constants.ts',
-  './hooks/useLocalStorage.ts',
-  './contexts/AppContext.tsx',
-  './services/geminiService.ts',
-  './components/ui/Card.tsx',
-  './components/layout/BottomNav.tsx',
-  './components/dashboard/Dashboard.tsx',
-  './components/dashboard/AdminPanel.tsx',
-  './components/transactions/TransactionHistory.tsx',
-  './components/transactions/AddTransaction.tsx',
-  './components/transactions/TransactionDetail.tsx',
-  './components/transactions/AddTransactionChoice.tsx',
-  './components/reports/MonthlyReport.tsx',
-  './components/settings/Settings.tsx',
-  './components/receivables/ReceivablesList.tsx',
-  './components/receivables/AddReceivable.tsx',
-  './components/receivables/ReceivableDetail.tsx',
-  './components/payables/PayablesList.tsx',
-  './components/payables/AddPayable.tsx',
-  './components/payables/PayableDetail.tsx',
-  './components/pwa/InstallPWAButton.tsx'
+  './favicon.svg'
 ];
 
+// Install: Cache the app shell
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        console.log('Opened cache and caching app shell');
+        return cache.addAll(APP_SHELL_URLS);
       })
   );
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).catch(() => caches.match('./index.html'));
-      })
-  );
-});
-
+// Activate: Clean up old caches
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
+  );
+});
+
+// Fetch: Implements a robust caching strategy
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Strategy: Cache First for CDN assets (they are versioned)
+  if (event.request.url.startsWith('https://aistudiocdn.com/') || event.request.url.startsWith('https://unpkg.com/')) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(response => {
+          const fetchPromise = fetch(event.request).then(networkResponse => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
+          return response || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+
+  // Strategy: Network First, falling back to Cache for local app assets
+  event.respondWith(
+    fetch(event.request)
+      .then(networkResponse => {
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME)
+          .then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request)
+          .then(cachedResponse => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            // For navigation requests, fallback to the main app shell page
+            if (event.request.mode === 'navigate') {
+              return caches.match('./index.html');
+            }
+            return new Response("You are offline and this resource isn't available in the cache.", {
+              status: 404,
+              statusText: "Not Found",
+              headers: { 'Content-Type': 'text/plain' }
+            });
+          });
+      })
   );
 });
