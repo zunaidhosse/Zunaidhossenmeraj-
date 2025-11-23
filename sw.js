@@ -1,7 +1,34 @@
-const CACHE_NAME = 'driver-money-manager-v3';
+const CACHE_NAME = 'driver-money-manager-v4';
 const urlsToCache = [
   './',
   './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './index.tsx',
+  './App.tsx',
+  './types.ts',
+  './constants.ts',
+  './hooks/useLocalStorage.ts',
+  './contexts/AppContext.tsx',
+  './services/geminiService.ts',
+  './components/ui/Card.tsx',
+  './components/layout/BottomNav.tsx',
+  './components/dashboard/Dashboard.tsx',
+  './components/dashboard/AdminPanel.tsx',
+  './components/transactions/TransactionHistory.tsx',
+  './components/transactions/AddTransaction.tsx',
+  './components/transactions/TransactionDetail.tsx',
+  './components/transactions/AddTransactionChoice.tsx',
+  './components/reports/MonthlyReport.tsx',
+  './components/settings/Settings.tsx',
+  './components/receivables/ReceivablesList.tsx',
+  './components/receivables/AddReceivable.tsx',
+  './components/receivables/ReceivableDetail.tsx',
+  './components/payables/PayablesList.tsx',
+  './components/payables/AddPayable.tsx',
+  './components/payables/PayableDetail.tsx',
+  './components/pwa/InstallPWAButton.tsx'
 ];
 
 self.addEventListener('install', event => {
