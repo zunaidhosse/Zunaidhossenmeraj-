@@ -1,0 +1,21 @@
+{
+  "short_name": "Money Manager",
+  "name": "Driver Money Manager",
+  "description": "A personal finance tracking application designed for car drivers to manage income, expenses, and view detailed reports.",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "./icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#007aff",
+  "background_color": "#1c1c1e"
+}
